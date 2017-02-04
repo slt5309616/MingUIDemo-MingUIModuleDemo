@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Message>
+  <Item id="01">
+    <content name="01">1111111111</content>
+    <content name="02">2222222222</content>
+    <content name="03">3333333333</content>
+  </Item>
+  <Item id="02">
+    <content name="01">4444444444</content>
+    <content name="02">5555555555</content>
+    <content name="03">6666666666</content>
+  </Item>
+</Message>
