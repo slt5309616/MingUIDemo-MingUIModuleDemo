@@ -3,8 +3,6 @@ using System.Collections;
 using Assets.Scripts.Com.MingUI;
 using Assets.Scripts.Com.Utils;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Assets.Scripts.Com.Managers;
 using System.Reflection;
 
 public class PanelCtrl : MonoBehaviour {

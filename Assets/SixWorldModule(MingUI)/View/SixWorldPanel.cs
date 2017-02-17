@@ -3,15 +3,16 @@ using Assets.Scripts.Com.MingUI;
 using System.Collections.Generic;
 using Assets.Scripts.Com.Utils;
 using MingUI.Com.Manager;
+using System.Text;
 
 public class SixWorldPanel  :MonoBehaviour{
-    public CGrid grid;
-    public UISprite starSprite;
-    public CButton btnSwitch;
-    public CButton resetBtn;
-    public UILabel timeLabel;
-    public UILabel numLabel;
-
+    private CGrid grid;
+    private UISprite starSprite;
+    private CButton btnSwitch;
+    private CButton resetBtn;
+    private UILabel timeLabel;
+    private UILabel numLabel;
+    private UILabel lblContent;
     private float enlageScale;
     private int curIndex;
     private int newIndex;
@@ -23,7 +24,9 @@ public class SixWorldPanel  :MonoBehaviour{
     private Vector3 OffsetYAmount ;
     private Vector3 OffsetXAmount;
     private int imageNum;
-
+    private Texture2D textureMouseNormal;
+    private Texture2D textureMouseClick;
+    private Texture2D textureMouseHover;
     private List<Transform> itemList;
     public enum Direction
     {
@@ -81,6 +84,7 @@ public class SixWorldPanel  :MonoBehaviour{
         resetBtn = DisplayUtil.getChildObjByName(myPanel.transform, "ResetButton").GetComponent<CButton>();
         timeLabel=DisplayUtil.getChildObjByName(myPanel.transform, "TimeLabel").GetComponent<UILabel>();
         numLabel = DisplayUtil.getChildObjByName(myPanel.transform, "NumLabel").GetComponent<UILabel>();
+        lblContent = DisplayUtil.getChildObjByName(myPanel.transform, "lblContent").GetComponent<UILabel>();
         /////////////////////////////////////////
         leftTime = totalTime = tempData.refreshTimeInSeconds;
         _currentRefreshTimes = tempData.totalRefreshTimes = tempData.totalRefreshTimes > 0 ? tempData.totalRefreshTimes : 0;
@@ -88,13 +92,22 @@ public class SixWorldPanel  :MonoBehaviour{
         imageNum = tempData.imageNum;
         timeLabel.text = "";
         _isInSecondLoop = false;
-
+        textureMouseHover = Resources.Load("MingUI/NewAtlas/UICommon/Mouse/click_over") as Texture2D;
+        textureMouseClick = Resources.Load("MingUI/NewAtlas/UICommon/Mouse/click_down") as Texture2D;
+        textureMouseNormal = Resources.Load("MingUI/NewAtlas/UICommon/Mouse/normal") as Texture2D;
+        Cursor.SetCursor(textureMouseNormal, Vector2.zero, CursorMode.Auto);
+        //////////////////////////////////////
         grid.itemRender = typeof(SixWorldRender);
         grid.SetDataProvider<int>(dataManager.indexList);
-
         btnSwitch.AddClick(OnSwitchBtnClicked);
         resetBtn.AddClick(OnResetBtnClicked);
-
+        var left = DisplayUtil.getChildObjByName(lblContent.transform, "LinkLeft");
+        var right = DisplayUtil.getChildObjByName(lblContent.transform, "LinkRight");
+        UIEventListener.Get(left).onHover = OnLblContentHover;
+        UIEventListener.Get(right).onHover = OnLblContentHover;
+        UIEventListener.Get(left).onPress = OnLblContentPress;
+        UIEventListener.Get(right).onPress = OnLblContentPress;
+        //////////////////////////////////////
         for (int i = 0; i < imageNum;i++ )
         {
             var component = DisplayUtil.GetChildByName(grid.transform, "Item" + i);
@@ -106,7 +119,7 @@ public class SixWorldPanel  :MonoBehaviour{
         OffsetYAmount = new Vector3(0, grid.transform.GetChild(0).GetComponentInChildren<Image>().height*(enlageScale-1)*0.5f);
         OffsetXAmount = new Vector3(grid.transform.GetChild(0).GetComponentInChildren<Image>().width * (enlageScale - 1) * 0.5f,0);
         UILoopManager.AddToSecond(myPanel, OnTimeCountDown);
-        UILoopManager.AddToFrame(this, Loop);
+        UILoopManager.AddToFrame(myPanel, Loop);
 	}
 	
 	// Update is called once per frame
@@ -171,19 +184,14 @@ public class SixWorldPanel  :MonoBehaviour{
         float scale;
         Color color;
         var tempComponent = trans.GetComponent<UIWidget>();
-        //var tempComponent = trans.GetComponentInChildren<Image>();
         switch (mode) {
             case Mode.Selected:
                 scale = enlageScale;
                 color = lightColor;
-                //tempComponent.SetDimensions(tempComponent.width + (int)OffsetXAmount.x, tempComponent.height + (int)OffsetYAmount.y);
-                //tempComponent.GetComponentInChildren<Image>().SetDimensions(tempComponent.width + (int)OffsetXAmount.x, tempComponent.height + (int)OffsetYAmount.y);
                 break;
             case Mode.UnSelected:
                 scale = _normalScale;
                 color = darkColor;
-                //tempComponent.SetDimensions(tempComponent.width - (int)OffsetXAmount.x, tempComponent.height - (int)OffsetYAmount.y);
-                //tempComponent.GetComponentInChildren<Image>().SetDimensions(tempComponent.width - (int)OffsetXAmount.x, tempComponent.height - (int)OffsetYAmount.y);
                 break;
             default:
                 scale = _normalScale;
@@ -211,6 +219,40 @@ public class SixWorldPanel  :MonoBehaviour{
     {
         newIndex = dataManager.data.defaultIndex ;
     }
+    public void OnLblContentHover(GameObject go, bool state) {
+        if (state){
+            Cursor.SetCursor(textureMouseHover, Vector2.zero, CursorMode.Auto);
+        } else {
+            Cursor.SetCursor(textureMouseNormal, Vector2.zero, CursorMode.Auto);
+        }
+        switch (go.name) {
+            case "LinkLeft":
+                //Debug.Log("LinkLeft Hover" );
+                break;
+            case "LinkRight":
+                //Debug.Log("LinkRight Hover");
+                break;
+            default:
+                break;
+        }
+    }
+    public void OnLblContentPress(GameObject go, bool state) {
+        if (state){
+            Cursor.SetCursor(textureMouseClick, Vector2.zero, CursorMode.Auto);
+        } else {
+            Cursor.SetCursor(textureMouseNormal, Vector2.zero, CursorMode.Auto);
+            switch (go.name) {
+                case "LinkLeft":
+                    Debug.Log("LinkLeft Press" + getStrFromLabel(lblContent,0));
+                    break;
+                case "LinkRight":
+                    Debug.Log("LinkRight Press" + getStrFromLabel(lblContent,1));
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
     private void setStarSprite(int index)
     {
         starSprite.spriteName = (newIndex+1).ToString();
@@ -218,7 +260,6 @@ public class SixWorldPanel  :MonoBehaviour{
         starSprite.width = tempSprite.width;
         starSprite.height = tempSprite.height;
     }
-
     public List<Transform> GetChildList(Transform transform)
     {
         Transform myTrans = transform;
@@ -364,5 +405,19 @@ public class SixWorldPanel  :MonoBehaviour{
             _currentRefreshTimes++;
             leftTime = totalTime;
         }
+    }
+
+    private string getStrFromLabel(UILabel lbl,int index) {
+       
+        StringBuilder str = new StringBuilder(lbl.text);
+        if (index ==0){
+            str.Remove(0, lbl.text.IndexOf("]") + 1);
+            return str.ToString(0, lbl.text.IndexOf("[")-1);
+        } 
+        if (index ==1){
+            str.Remove(lbl.text.LastIndexOf("["), lbl.text.Length - lbl.text.LastIndexOf("]"));
+            return str.ToString(lbl.text.LastIndexOf("]")+1, lbl.text.Length - lbl.text.LastIndexOf("]")-1);
+        }
+        return null;
     }
 }
